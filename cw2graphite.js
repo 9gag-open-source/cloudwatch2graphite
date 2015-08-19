@@ -17,10 +17,12 @@ function getOneStat(metric,regionName) {
 
 	var now = new Date();
 	var then = (interval).minutes().ago()
+	if ( metric.Namespace.match(/Billing/) || metric.Namespace.match(/S3/)) {
+		then.setHours(then.getHours() - 30)
+	}
+
 	var end_time = dateFormat(now, "isoUtcDateTime");
 	var start_time = dateFormat(then, "isoUtcDateTime");
-
-
 	var options = {
 		Namespace: metric.Namespace,
 		MetricName: metric.MetricName,
@@ -34,6 +36,13 @@ function getOneStat(metric,regionName) {
 		"Dimensions.member.2.Name": metric["Dimensions.member.2.Name"],
 		"Dimensions.member.2.Value": metric["Dimensions.member.2.Value"],
 
+	}
+
+	if ( metric.Namespace.match(/Billing/) ) {
+		options["Period"] = '28800'
+	}
+	if ( metric.Namespace.match(/S3/) ) {
+		options["Period"] = '86400'
 	}
 
 	metric.name = (global_options.metrics_config.carbonNameSpacePrefix != undefined) ? global_options.metrics_config.carbonNameSpacePrefix + "." : "";
